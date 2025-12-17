@@ -28,13 +28,23 @@ int _getch() {
 #endif
 
 int main(int argc, char* argv[]) {
-    SerialTradeLoader tradeLoader;
+    /*SerialTradeLoader tradeLoader;
+    
     auto allTrades = tradeLoader.loadTrades();
     
     ScalarResults results;
-    SerialPricer pricer;
-    pricer.price(allTrades, &results);
     
+    //SerialPricer pricer;
+    ParallelPricer pricer;
+    
+    pricer.price(allTrades, &results);*/
+    
+    ScalarResults results;
+
+	// Use streaming loader: trades are loaded and priced immediately
+	StreamingTradeLoader streamingLoader;
+	streamingLoader.loadAndPrice(&results);
+		
     ScreenResultPrinter screenPrinter;
     screenPrinter.printResults(results);
     
