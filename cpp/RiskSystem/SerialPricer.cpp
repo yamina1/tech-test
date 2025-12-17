@@ -50,6 +50,16 @@ void SerialPricer::loadPricers() {
 
         IPricingEngine* engine = nullptr;
 
+
+         // Reuse / compatibility:
+		// Config can contain fully-qualified names (e.g. "HmxLabs.TechTest.Pricers.GovBondPricingEngine").
+		// In C++ we only care about the class name, so take the last token after '.' (and '::' just in case).
+		auto shortType = typeName;
+		auto dotPos = shortType.find_last_of('.');
+		if (dotPos != std::string::npos) shortType = shortType.substr(dotPos + 1);
+		auto colPos = shortType.find_last_of(':'); // handles "Namespace::Class"
+		if (colPos != std::string::npos) shortType = shortType.substr(colPos + 1);
+
         /*
          * Simple factory pattern:
          * C++ has no runtime reflection here, so we explicitly map
@@ -60,7 +70,7 @@ void SerialPricer::loadPricers() {
          */
         
 
-		if (typeName == "GovBondPricingEngine") {
+		/*if (typeName == "GovBondPricingEngine") {
 			engine = new GovBondPricingEngine();
 		}
 		else if (typeName == "CorpBondPricingEngine") {
@@ -71,8 +81,20 @@ void SerialPricer::loadPricers() {
 		}
 		else {
 			throw std::runtime_error("Unknown pricing engine type: " + typeName);
-		}
+		}*/
 
+		if (shortType == "GovBondPricingEngine") {
+			engine = new GovBondPricingEngine();
+		}
+		else if (shortType == "CorpBondPricingEngine") {
+			engine = new CorpBondPricingEngine();
+		}
+		else if (shortType == "FxPricingEngine") {
+			engine = new FxPricingEngine();
+		}
+		else {
+			throw std::runtime_error("Unknown pricing engine type: " + typeName);
+		}
 
         /*
          * Register the pricing engine for this trade type.
