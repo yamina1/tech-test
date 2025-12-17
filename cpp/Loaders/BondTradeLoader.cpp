@@ -6,6 +6,13 @@
 #include <iomanip>
 #include <chrono>
 
+// Clean spaces
+static inline void trim_in_place(std::string& s) {
+    const char* ws = " \t\r\n";
+    s.erase(0, s.find_first_not_of(ws));
+    s.erase(s.find_last_not_of(ws) + 1);
+}
+
 BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     std::vector<std::string> items;
     std::stringstream ss(line);
@@ -19,7 +26,15 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
         throw std::runtime_error("Invalid line format");
     }
     
-    BondTrade* trade = new BondTrade(items[6]);
+    //BondTrade* trade = new BondTrade(items[6]);
+    //* BondTrade* trade = new BondTrade(items[6], items[0]);
+    std::string tradeId = items[6];
+	std::string tradeType = items[0];
+	trim_in_place(tradeId);
+	trim_in_place(tradeType);
+
+	BondTrade* trade = new BondTrade(tradeId, tradeType);
+    
     
     std::tm tm = {};
     std::istringstream dateStream(items[1]);
@@ -27,6 +42,7 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     auto timePoint = std::chrono::system_clock::from_time_t(std::mktime(&tm));
     trade->setTradeDate(timePoint);
     
+     
     trade->setInstrument(items[2]);
     trade->setCounterparty(items[3]);
     trade->setNotional(std::stod(items[4]));
@@ -34,6 +50,7 @@ BondTrade* BondTradeLoader::createTradeFromLine(std::string line) {
     
     return trade;
 }
+
 
 void BondTradeLoader::loadTradesFromFile(std::string filename, BondTradeList& tradeList) {
     if (filename.empty()) {
